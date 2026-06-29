@@ -1,13 +1,10 @@
 from src.utils.spark_session import create_spark_session
 from src.config.config import BRONZE_PATH, SILVER_PATH
-from pyspark.sql.functions import (
-    col,
-    year,
-    month,
-    dayofmonth,
-    hour,
-    when
-)
+from src.utils.logger import get_logger
+from src.transformations.sales import add_revenue
+from src.transformations.dates import add_date_features
+from src.transformations.flags import add_cancel_flag
+
 
 # ============================================================
 # Create Spark Session
@@ -20,7 +17,7 @@ spark = create_spark_session("Retail Data Pipeline - Silver Layer")
 # ============================================================
 # Read Bronze Layer
 # ============================================================
-
+logger = get_logger("Silver Layer")
 
 
 df = spark.read.parquet(str(BRONZE_PATH))
@@ -29,55 +26,24 @@ print("=" * 60)
 print("BRONZE LAYER")
 print("=" * 60)
 
-print(f"Rows : {df.count()}")
+logger.info(f"Rows Loaded: {df.count()}")
 print(f"Columns : {len(df.columns)}")
 
 # ============================================================
 # Business Transformations
 # ============================================================
 
-silver_df = (
+logger.info("Adding Revenue Column")
+df = add_revenue(df)
 
-    df
+logger.info("Adding Date Features")
+df = add_date_features(df)
 
-    # Revenue
-    .withColumn(
-        "Revenue",
-        (col("Quantity") * col("UnitPrice")).cast("double")
-    )
+logger.info("Adding Cancel Flag")
+silver_df = add_cancel_flag(df)
 
-    # Date Features
-    .withColumn(
-        "InvoiceYear",
-        year(col("InvoiceDate"))
-    )
 
-    .withColumn(
-        "InvoiceMonth",
-        month(col("InvoiceDate"))
-    )
-
-    .withColumn(
-        "InvoiceDay",
-        dayofmonth(col("InvoiceDate"))
-    )
-
-    .withColumn(
-        "InvoiceHour",
-        hour(col("InvoiceDate"))
-    )
-
-    # Cancelled Orders
-    .withColumn(
-        "IsCancelled",
-        when(
-            col("InvoiceNo").startswith("C"),
-            True
-        ).otherwise(False)
-    )
-
-)
-
+logger.info("Displaying Silver Schema")
 print("\n" + "=" * 60)
 print("SILVER SCHEMA")
 print("=" * 60)
@@ -85,7 +51,7 @@ print("=" * 60)
 silver_df.printSchema()
 
 print("\n" + "=" * 60)
-print("FIRST 5 ROWS")
+logger.info("Displaying Sample Records")
 print("=" * 60)
 
 silver_df.show(5, truncate=False)
@@ -104,7 +70,7 @@ silver_df.explain(True)
 silver_df.write.mode("overwrite").parquet(str(SILVER_PATH))
 
 print("\n" + "=" * 60)
-print("Silver Layer Written Successfully!")
+logger.info("Silver Layer Written Successfully")
 print(f"Location : {SILVER_PATH}")
 print("=" * 60)
 
