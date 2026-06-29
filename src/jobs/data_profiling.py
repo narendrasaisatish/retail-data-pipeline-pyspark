@@ -1,15 +1,10 @@
-from pyspark.sql import SparkSession
+from src.utils.spark_session import create_spark_session
 from pyspark.sql.functions import col, count, when
 
 # ---------------------------------------------------
 # Create Spark Session
 # ---------------------------------------------------
-spark = (
-    SparkSession.builder
-    .appName("Retail Data Profiling")
-    .master("local[*]")
-    .getOrCreate()
-)
+spark = create_spark_session("Retail Data Profiling")
 
 # ---------------------------------------------------
 # Read CSV from Landing Layer

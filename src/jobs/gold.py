@@ -1,16 +1,11 @@
-from pyspark.sql import SparkSession
+from src.utils.spark_session import create_spark_session
 from pyspark.sql.functions import sum, round
 
 # =====================================================
 # Create Spark Session
 # =====================================================
 
-spark = (
-    SparkSession.builder
-    .appName("Gold Layer")
-    .master("local[*]")
-    .getOrCreate()
-)
+spark = create_spark_session("Gold Layer")
 
 # =====================================================
 # Read Silver Layer

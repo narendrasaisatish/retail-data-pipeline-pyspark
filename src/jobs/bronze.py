@@ -1,14 +1,9 @@
-from pyspark.sql import SparkSession
+from src.utils.spark_session import create_spark_session
 
 # ---------------------------------------
 # Create Spark Session
 # ---------------------------------------
-spark = (
-    SparkSession.builder
-    .appName("Bronze Layer")
-    .master("local[*]")
-    .getOrCreate()
-)
+spark = create_spark_session("Bronze Layer")
 
 # ---------------------------------------
 # Read Landing CSV

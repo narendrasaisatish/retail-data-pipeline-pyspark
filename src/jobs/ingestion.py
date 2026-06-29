@@ -1,12 +1,8 @@
-from pyspark.sql import SparkSession
+from src.utils.spark_session import create_spark_session
 import pandas as pd
 
-spark = (
-    SparkSession.builder
-    .appName("Retail Data Pipeline")
-    .master("local[*]")
-    .getOrCreate()
-)
+spark = create_spark_session("Retail Data Pipeline")
+
 
 file_path = "data/raw/Online Retail.xlsx"
 

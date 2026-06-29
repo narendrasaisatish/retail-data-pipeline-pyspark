@@ -1,4 +1,5 @@
-from pyspark.sql import SparkSession
+from src.utils.spark_session import create_spark_session
+from src.config.config import BRONZE_PATH, SILVER_PATH
 from pyspark.sql.functions import (
     col,
     year,
@@ -12,20 +13,17 @@ from pyspark.sql.functions import (
 # Create Spark Session
 # ============================================================
 
-spark = (
-    SparkSession.builder
-    .appName("Retail Data Pipeline - Silver Layer")
-    .master("local[*]")
-    .getOrCreate()
-)
+
+spark = create_spark_session("Retail Data Pipeline - Silver Layer")
+
 
 # ============================================================
 # Read Bronze Layer
 # ============================================================
 
-bronze_path = "/home/satish/databricks-projects/retail-data-pipeline/bronze/retail_transactions"
 
-df = spark.read.parquet(bronze_path)
+
+df = spark.read.parquet(str(BRONZE_PATH))
 
 print("=" * 60)
 print("BRONZE LAYER")
@@ -103,17 +101,11 @@ silver_df.explain(True)
 # Write Silver Layer
 # ============================================================
 
-silver_path = "/home/satish/databricks-projects/retail-data-pipeline/silver/retail_transactions"
-
-(
-    silver_df.write
-    .mode("overwrite")
-    .parquet(silver_path)
-)
+silver_df.write.mode("overwrite").parquet(str(SILVER_PATH))
 
 print("\n" + "=" * 60)
 print("Silver Layer Written Successfully!")
-print(f"Location : {silver_path}")
+print(f"Location : {SILVER_PATH}")
 print("=" * 60)
 
 # ============================================================
